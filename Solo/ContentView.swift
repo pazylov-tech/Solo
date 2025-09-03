@@ -9,13 +9,19 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        ZStack {
+            // Background color
+            Color.init(red: 0.1, green: 0.2, blue: 0.5).ignoresSafeArea()  // fill the whole screen
+            
+            VStack {
+                Text("SOLO")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                Spacer() // pushes the text to the top
+            }
+            .padding()
         }
-        .padding()
     }
 }
 
