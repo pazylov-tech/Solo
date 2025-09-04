@@ -11,16 +11,30 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             // Background color
-            Color.init(red: 0.1, green: 0.2, blue: 0.5).ignoresSafeArea()  // fill the whole screen
+            Color(red: 0.1, green: 0.2, blue: 0.5)
+                .ignoresSafeArea()
             
-            VStack {
-                Text("SOLO")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+            VStack(spacing: 40) {
+                Text("Welcome!")
+                    .font(.system(size: 36, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
-                Spacer() // pushes the text to the top
+                    .shadow(radius: 4)
+                
+                Button(action: {
+                    // TODO: Add navigation or action here
+                    print("Proceed tapped")
+                }) {
+                    Text("Proceed")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.white)
+                        .foregroundColor(Color(red: 0.1, green: 0.2, blue: 0.5))
+                        .cornerRadius(12)
+                        .shadow(radius: 5)
+                }
+                .padding(.horizontal, 37)
             }
-            .padding()
         }
     }
 }
