@@ -7,141 +7,202 @@
 
 import SwiftUI
 
+// MARK: - Helpers
+fileprivate func isValidEmail(_ email: String) -> Bool {
+    let emailRegEx = "(?:[A-Z0-9a-z._%+-]+)@(?:[A-Za-z0-9.-]+)\\.[A-Za-z]{2,64}"
+    return NSPredicate(format: "SELF MATCHES %@", emailRegEx).evaluate(with: email)
+}
+
+fileprivate func age(from dob: Date) -> Int {
+    Calendar.current.dateComponents([.year], from: dob, to: Date()).year ?? 0
+}
+
+let themeColor = Color(red: 0.1, green: 0.2, blue: 0.5)
+let accentWhite = Color.white
+
+// MARK: - Root
 struct ContentView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background color
-                Color(red: 0.1, green: 0.2, blue: 0.5)
-                    .ignoresSafeArea()
+                themeColor.ignoresSafeArea()
                 
                 VStack(spacing: 40) {
+                    Spacer()
+                    
                     Text("Welcome!")
                         .font(.system(size: 36, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
+                        .foregroundColor(accentWhite)
                         .shadow(radius: 4)
                     
-                    // Navigate to NameInputView
                     NavigationLink(destination: NameInputView()) {
                         Text("Proceed")
                             .font(.headline)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Color.white)
-                            .foregroundColor(Color(red: 0.1, green: 0.2, blue: 0.5))
+                            .background(accentWhite)
+                            .foregroundColor(themeColor)
                             .cornerRadius(12)
                             .shadow(radius: 5)
                     }
                     .padding(.horizontal, 37)
+                    
+                    Spacer()
                 }
             }
+            .navigationBarHidden(true)
         }
     }
 }
 
-// Step 1: Name Input
+// MARK: - Name Input
 struct NameInputView: View {
     @State private var firstName = ""
     @State private var lastName = ""
     @State private var navigateToEmail = false
+    @FocusState private var focusedField: NameField?
+    
+    enum NameField { case first, last }
+    
+    private var isNameValid: Bool {
+        !firstName.trimmingCharacters(in: .whitespaces).isEmpty &&
+        !lastName.trimmingCharacters(in: .whitespaces).isEmpty
+    }
     
     var body: some View {
         ZStack {
-            Color(red: 0.1, green: 0.2, blue: 0.5)
-                .ignoresSafeArea()
+            themeColor.ignoresSafeArea()
             
             VStack(spacing: 20) {
                 Text("Enter Your Name")
                     .font(.title)
-                    .foregroundColor(.white)
-                    .padding(.bottom, 30)
+                    .foregroundColor(accentWhite)
+                    .padding(.bottom, 10)
                 
-                TextField("First Name", text: $firstName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal, 40)
-                
-                TextField("Last Name", text: $lastName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal, 40)
+                Group {
+                    TextField("First Name", text: $firstName)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .focused($focusedField, equals: .first)
+                        .submitLabel(.next)
+                        .onSubmit { focusedField = .last }
+                    
+                    TextField("Last Name", text: $lastName)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .focused($focusedField, equals: .last)
+                        .submitLabel(.done)
+                        .onSubmit { focusedField = nil }
+                }
+                .padding(.horizontal, 40)
                 
                 // Navigate to EmailInputView
                 NavigationLink(
                     destination: EmailInputView(firstName: firstName, lastName: lastName),
                     isActive: $navigateToEmail
-                ) {
-                    EmptyView()
-                }
+                ) { EmptyView() }
                 
-                Button("Next") {
-                    navigateToEmail = true
+                Button(action: { navigateToEmail = true }) {
+                    Text("Next")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(isNameValid ? accentWhite : .gray.opacity(0.6))
+                        .foregroundColor(themeColor)
+                        .cornerRadius(12)
+                        .shadow(radius: isNameValid ? 5 : 0)
                 }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color.white)
-                .foregroundColor(Color(red: 0.1, green: 0.2, blue: 0.5))
-                .cornerRadius(12)
-                .shadow(radius: 5)
+                .disabled(!isNameValid)
                 .padding(.horizontal, 40)
                 
                 Spacer()
             }
-            .padding(.top, 100)
+            .padding(.top, 40)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { focusedField = nil }
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
 
-// Step 2: Email Input
+// MARK: - Email Input
 struct EmailInputView: View {
     var firstName: String
     var lastName: String
     
     @State private var email = ""
     @State private var navigateToDOB = false
+    @FocusState private var emailFocused: Bool
+    
+    private var isEmailValid: Bool {
+        isValidEmail(email)
+    }
     
     var body: some View {
         ZStack {
-            Color(red: 0.1, green: 0.2, blue: 0.5)
-                .ignoresSafeArea()
+            themeColor.ignoresSafeArea()
             
             VStack(spacing: 20) {
                 Text("Enter Your Email")
                     .font(.title)
-                    .foregroundColor(.white)
-                    .padding(.bottom, 30)
+                    .foregroundColor(accentWhite)
+                    .padding(.bottom, 10)
                 
                 TextField("Email Address", text: $email)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding(.horizontal, 40)
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                    .focused($emailFocused)
+                    .submitLabel(.done)
+                    .onSubmit { emailFocused = false }
                 
-                // Navigate to DOBInputView
+                if !email.isEmpty {
+                    HStack {
+                        Image(systemName: isEmailValid ? "checkmark.seal.fill" : "xmark.octagon.fill")
+                            .foregroundColor(isEmailValid ? .green : .yellow)
+                        Text(isEmailValid ? "Valid email" : "Invalid email")
+                            .foregroundColor(.white)
+                            .font(.footnote)
+                    }
+                }
+                
                 NavigationLink(
                     destination: DOBInputView(firstName: firstName, lastName: lastName, email: email),
                     isActive: $navigateToDOB
-                ) {
-                    EmptyView()
-                }
+                ) { EmptyView() }
                 
-                Button("Next") {
-                    navigateToDOB = true
+                Button(action: { navigateToDOB = true }) {
+                    Text("Next")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(isEmailValid ? accentWhite : .gray.opacity(0.6))
+                        .foregroundColor(themeColor)
+                        .cornerRadius(12)
+                        .shadow(radius: isEmailValid ? 5 : 0)
                 }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color.white)
-                .foregroundColor(Color(red: 0.1, green: 0.2, blue: 0.5))
-                .cornerRadius(12)
-                .shadow(radius: 5)
+                .disabled(!isEmailValid)
                 .padding(.horizontal, 40)
                 
                 Spacer()
             }
-            .padding(.top, 100)
+            .padding(.top, 40)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { emailFocused = false }
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
 
-// Step 3: DOB Input
+// MARK: - DOB Input
 struct DOBInputView: View {
     var firstName: String
     var lastName: String
@@ -150,54 +211,63 @@ struct DOBInputView: View {
     @State private var dateOfBirth = Date()
     @State private var navigateToConfirmation = false
     
+    private var userAge: Int { age(from: dateOfBirth) }
+    private var isDOBValid: Bool { userAge >= 13 } // example minimum
+    
     var body: some View {
         ZStack {
-            Color(red: 0.1, green: 0.2, blue: 0.5)
-                .ignoresSafeArea()
+            themeColor.ignoresSafeArea()
             
             VStack(spacing: 20) {
                 Text("Enter Your Date of Birth")
                     .font(.title)
-                    .foregroundColor(.white)
-                    .padding(.bottom, 30)
+                    .foregroundColor(accentWhite)
+                    .padding(.bottom, 10)
                 
-                DatePicker("Date of Birth", selection: $dateOfBirth, displayedComponents: .date)
+                DatePicker("", selection: $dateOfBirth, displayedComponents: .date)
                     .datePickerStyle(.wheel)
                     .labelsHidden()
                     .padding(.horizontal, 40)
+                    .frame(maxHeight: 200)
                 
-                // Navigate to ConfirmationView
+                Text("Age: \(userAge)")
+                    .foregroundColor(.white)
+                    .font(.subheadline)
+                
                 NavigationLink(
-                    destination: ConfirmationView(
-                        firstName: firstName,
-                        lastName: lastName,
-                        email: email,
-                        dateOfBirth: dateOfBirth
-                    ),
+                    destination: ConfirmationView(firstName: firstName, lastName: lastName, email: email, dateOfBirth: dateOfBirth),
                     isActive: $navigateToConfirmation
-                ) {
-                    EmptyView()
-                }
+                ) { EmptyView() }
                 
-                Button("Confirm") {
-                    navigateToConfirmation = true
+                Button(action: { navigateToConfirmation = true }) {
+                    Text("Confirm")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(isDOBValid ? accentWhite : .gray.opacity(0.6))
+                        .foregroundColor(themeColor)
+                        .cornerRadius(12)
+                        .shadow(radius: isDOBValid ? 5 : 0)
                 }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color.white)
-                .foregroundColor(Color(red: 0.1, green: 0.2, blue: 0.5))
-                .cornerRadius(12)
-                .shadow(radius: 5)
+                .disabled(!isDOBValid)
                 .padding(.horizontal, 40)
+                
+                if !isDOBValid {
+                    Text("You must be 13 or older.")
+                        .foregroundColor(.yellow)
+                        .font(.footnote)
+                        .padding(.top, 6)
+                }
                 
                 Spacer()
             }
-            .padding(.top, 100)
+            .padding(.top, 20)
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
 
-// Final Registration Screen
+// MARK: - Confirmation
 struct ConfirmationView: View {
     var firstName: String
     var lastName: String
@@ -206,8 +276,7 @@ struct ConfirmationView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.1, green: 0.2, blue: 0.5)
-                .ignoresSafeArea()
+            themeColor.ignoresSafeArea()
             
             VStack(spacing: 20) {
                 Text("Welcome, \(firstName) \(lastName)!")
@@ -216,21 +285,22 @@ struct ConfirmationView: View {
                     .multilineTextAlignment(.center)
                     .shadow(radius: 4)
                 
-                Text("Email: \(email)")
-                    .foregroundColor(.white)
-                    .font(.headline)
-                
-                Text("Date of Birth: \(dateOfBirth.formatted(date: .long, time: .omitted))")
-                    .foregroundColor(.white)
-                    .font(.headline)
+                VStack(spacing: 6) {
+                    Text("Email: \(email)")
+                    Text("Date of Birth: \(dateOfBirth.formatted(date: .long, time: .omitted))")
+                }
+                .foregroundColor(.white)
+                .font(.headline)
                 
                 Spacer()
             }
             .padding()
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
 
+// MARK: - Previews
 #Preview {
     ContentView()
 }
