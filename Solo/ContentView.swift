@@ -1,9 +1,4 @@
-//
-//  ContentView.swift
 //  Solo
-//
-//  Created by Pazylov Toichubek on 17/5/26.
-//
 
 import SwiftUI
 
@@ -13,7 +8,7 @@ struct ContentView: View {
             Image(systemName: "globe")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
-            Text("Hello, player. Ler's arise SOLO!")
+            Text("Hello, player. Let's arise SOLO! 🧢")
         }
         .padding()
     }
