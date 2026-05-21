@@ -22,7 +22,8 @@ struct AuthView: View {
             
             VStack(spacing: 12) {
                 if !isLoginMode {
-                    AppField(placeholder: "Name", text: $viewModel.name)
+                    AppField(placeholder: "First Name", text: $viewModel.firstName)
+                    AppField(placeholder: "Last Name", text: $viewModel.lastName)
                 }
                 
                 AppField(placeholder: "Email", text: $viewModel.email)
