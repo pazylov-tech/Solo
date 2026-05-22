@@ -10,6 +10,12 @@ struct MainButton: View {
     var icon: Image? = nil
     var action: () -> Void
     
+    let midnightBlue = Color(
+        red: 10/255,
+        green: 25/255,
+        blue: 47/255
+    )
+    
     var body: some View {
         Button {
             action()
@@ -17,8 +23,8 @@ struct MainButton: View {
             Text(title)
                 .frame(height: 52)
                 .frame(maxWidth: .infinity)
-                .background(.gray)
-                .foregroundStyle(.black)
+                .background(midnightBlue)
+                .foregroundStyle(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 18))
                 .font(.system(size: 20, weight: .bold))
                 .padding(.horizontal, 16)
