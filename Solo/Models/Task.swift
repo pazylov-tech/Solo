@@ -19,4 +19,3 @@ extension Task {
         Task(title: "Running", count: "[0/10km]")
     ]
 }
- 

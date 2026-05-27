@@ -9,4 +9,3 @@ import Combine
 class MainViewModel: ObservableObject {
     @Published var tasks: [Task] = Task.mockData
 }
-

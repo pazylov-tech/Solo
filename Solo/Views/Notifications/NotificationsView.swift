@@ -1,0 +1,4 @@
+//
+//  NotificationsView.swift
+//  Solo
+//
